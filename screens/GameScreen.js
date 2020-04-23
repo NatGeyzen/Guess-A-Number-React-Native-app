@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { 
     View, 
     Text, 
     StyleSheet,
-    Button
+    Button,
+    Alert
 } from 'react-native';
 
 import Card from '../components/Card';
@@ -24,9 +25,35 @@ const generateRandomNumber = (min, max, exclude) => {
 
 const GameScreen = props => {
 
-    const [ currentGuess, setCurrentGuess ] = useState(
-        generateRandomNumber(1, 100, props.userChoice)
-    )
+    const [ currentGuess, setCurrentGuess ] = useState(generateRandomNumber(1, 100, props.userChoice));
+    const currentMin = useRef(1);
+    const currentMax = useRef(100);
+
+    const { userChoice } = props;
+
+    useEffect(() => {
+        if (currentGuess === userChoice) {
+            Alert.alert('Number Guessed!', 'Game finished ...', [{text: 'Okay', style: 'default'}])
+        }
+    }, [currentGuess, userChoice]);
+
+    const nextGuessHandler = direction => {
+        if (
+            (direction === 'lower' && currentGuess < props.userChoice) || 
+            (direction === 'higher' && currentGuess > props.userChoice)) {
+                Alert.alert('Don\'t lie!', 'You know that this is wrong ...', [
+                    {text: 'Sorry!', style: 'cancel'}
+                ]);
+                return;
+        };
+        if (direction === 'lower') {
+            currentMax.current = currentGuess;
+        } else if (direction === 'higher') {
+            currentMin.current = currentGuess;
+        }
+        const nextNumber = generateRandomNumber(currentMin.current, currentMax.current, currentGuess);
+        setCurrentGuess(nextNumber);
+    };
 
     return (
         <View style={styles.screen}>
@@ -35,10 +62,16 @@ const GameScreen = props => {
                 <NumberContainer selectedNumber={currentGuess} />
                 <View style={styles.buttonWrapper}>
                     <View style={styles.button}>
-                        <Button title="LOWER" color={Colors.accent1} />
+                        <Button 
+                            title="LOWER" 
+                            color={Colors.accent1}
+                            onPress={() => nextGuessHandler('lower')} />
                     </View>
                     <View style={styles.button}>
-                        <Button title="HIGHER" color={Colors.accent2} />    
+                        <Button 
+                            title="HIGHER" 
+                            color={Colors.accent2}
+                            onPress={() => nextGuessHandler('higher')} />    
                     </View>
                 </View>
                 
