@@ -26,6 +26,8 @@ const generateRandomNumber = (min, max, exclude) => {
 const GameScreen = props => {
 
     const [ currentGuess, setCurrentGuess ] = useState(generateRandomNumber(1, 100, props.userChoice));
+    const [ roundsCount, setRoundsCount ] = useState(1);
+
     const currentMin = useRef(1);
     const currentMax = useRef(100);
 
@@ -33,7 +35,7 @@ const GameScreen = props => {
 
     useEffect(() => {
         if (currentGuess === userChoice) {
-            Alert.alert('Number Guessed!', 'Game finished ...', [{text: 'Okay', style: 'default'}])
+            props.onWin(roundsCount);
         }
     }, [currentGuess, userChoice]);
 
@@ -47,12 +49,13 @@ const GameScreen = props => {
                 return;
         };
         if (direction === 'lower') {
-            currentMax.current = currentGuess;
+            currentMax.current = currentGuess - 1;
         } else if (direction === 'higher') {
-            currentMin.current = currentGuess;
+            currentMin.current = currentGuess + 1;
         }
         const nextNumber = generateRandomNumber(currentMin.current, currentMax.current, currentGuess);
         setCurrentGuess(nextNumber);
+        setRoundsCount(currentRound => currentRound + 1);
     };
 
     return (
